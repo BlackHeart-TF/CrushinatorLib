@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibOpenCrush", "OpenCrushLib\LibOpenCrush.csproj", "{06EE351C-60CC-4518-B71B-FBA1C03EA088}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crushinator", "Crushinator\Crushinator.csproj", "{7E15203C-9798-4DC9-980B-ABBF57A790AC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{06EE351C-60CC-4518-B71B-FBA1C03EA088}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06EE351C-60CC-4518-B71B-FBA1C03EA088}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06EE351C-60CC-4518-B71B-FBA1C03EA088}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06EE351C-60CC-4518-B71B-FBA1C03EA088}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E15203C-9798-4DC9-980B-ABBF57A790AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E15203C-9798-4DC9-980B-ABBF57A790AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E15203C-9798-4DC9-980B-ABBF57A790AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E15203C-9798-4DC9-980B-ABBF57A790AC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F39A2274-5028-4A28-AD02-E17D6B391B20}
+	EndGlobalSection
+EndGlobal
