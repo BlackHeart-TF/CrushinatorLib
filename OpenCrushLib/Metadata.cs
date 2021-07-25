@@ -4,13 +4,13 @@ using System.Text;
 
 namespace LibOpenCrush
 {
-    struct Metadata
+    public struct Metadata
     {
         //// Minumim imetadata for all versions and EPD
         //"name" : None,
         public string Name;
         //"size" : None,
-        public uint Size;
+        public uint FileSize;
         //"offset" : None,
         public uint Offset;
         //// Present in EPD and POD2+

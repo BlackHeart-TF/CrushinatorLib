@@ -29,7 +29,7 @@ namespace LibOpenCrush
         // Only in POD5 present
         string next_pod_file = null;
         //Dict for all file entries
-        Dictionary<string, Metadata> file_tree = new Dictionary<string, Metadata>();
+        public Dictionary<string,Metadata> FileTree { get; private set; } = new Dictionary<string, Metadata>();
 
 
         short index;
@@ -50,6 +50,14 @@ namespace LibOpenCrush
                     parse_header();
                 return (uint)this.file_count;
             } }
+
+        public Stream GetFileStream(Metadata metadata)
+        {
+            var stream = File.OpenRead(this.pod_file);
+            var sub = new SubStream(stream, metadata.Offset, metadata.FileSize);
+            return sub;
+        }
+
         private string ReadString(int length)
         {
             var output = new List<byte>();
@@ -78,11 +86,11 @@ namespace LibOpenCrush
         /// <param name="FileName">The file to read</param>
         /// <param name="Decompress">If the file needs to be decompressed</param>
         /// <returns></returns>
-        public byte[] read_file(string file_name, bool decompress = false)
+        public byte[] ReadFile(string FileName, bool decompress = false)
         {
             podstream = File.OpenRead(this.pod_file);
-            podstream.Position = this.file_tree[file_name].Offset;
-            var data = new byte[this.file_tree[file_name].Size];
+            podstream.Position = this.FileTree[FileName].Offset;
+            var data = new byte[this.FileTree[FileName].FileSize];
             for(int i = 0; i < data.Length;i++)
             data[i]=(byte)podstream.ReadByte();
             if (decompress)
@@ -121,7 +129,7 @@ namespace LibOpenCrush
         /// </summary>
         /// <param name="data">The data to decompress</param>
         /// <returns></returns>
-        public byte[] Decompress(byte[] data)
+        private byte[] Decompress(byte[] data)
         {
             // TODO compressed files, seems like some sort of zlib raw deflate format(no header)
             throw new NotImplementedException("data uncompression is not implemented");
@@ -258,13 +266,13 @@ namespace LibOpenCrush
         /// <summary>
         /// Parse the file table of the POD archive and populates the file directory tree
         /// </summary>
-        public void parse_file_table()
+        private void parse_file_table()
         {
 
-            if (this.file_tree == null)
-                this.file_tree = new Dictionary<string, Metadata>();
+            if (this.FileTree == null)
+                this.FileTree = new Dictionary<string, Metadata>();
 
-            this.file_tree.Clear();
+            this.FileTree.Clear();
 
                 uint DIR_ENTRY_SIZE;
             switch (this.magic)
@@ -309,9 +317,9 @@ namespace LibOpenCrush
                     // uint32 file_offset;
                     // }
                     file_name = ReadString(FILE_NAME_LENGTH_POD1);
-                    metadata.Size = ReadUInt();
+                    metadata.FileSize = ReadUInt();
                     metadata.Offset = ReadUInt();
-                    metadata.UncompressedSize = metadata.Size;
+                    metadata.UncompressedSize = metadata.FileSize;
                 }
                 else if (this.magic == "EPD")
                 {
@@ -324,11 +332,11 @@ namespace LibOpenCrush
                     //     uint32 file_checksum;
                     // }
                     file_name = ReadString(FILE_NAME_LENGTH_EPD);
-                    metadata.Size = ReadUInt();
+                    metadata.FileSize = ReadUInt();
                     metadata.Offset = ReadUInt();
                     metadata.TimeStamp = ReadUInt();
                     metadata.Checksum = ReadUInt();
-                    metadata.UncompressedSize = metadata.Size;
+                    metadata.UncompressedSize = metadata.FileSize;
                 }
                 else if (this.magic == "POD6")
                 {
@@ -344,7 +352,7 @@ namespace LibOpenCrush
                     // Seek to the start of the index entry
                     podstream.Position = this.index_offset + (index * DIR_ENTRY_SIZE);
                     metadata.PathOffset = ReadUInt();
-                    metadata.Size = ReadUInt();
+                    metadata.FileSize = ReadUInt();
                     metadata.Offset = ReadUInt();
                     metadata.UncompressedSize = ReadUInt();
                     metadata.Flags = ReadUInt();
@@ -357,7 +365,7 @@ namespace LibOpenCrush
                     podstream.Position = this.index_offset + ((uint)this.file_count * DIR_ENTRY_SIZE) + metadata.PathOffset;
                     file_name = ReadString(FILE_NAME_LENGTH);
 
-                    if (metadata.Size != metadata.UncompressedSize && (metadata.Flags & 8) == 0)
+                    if (metadata.FileSize != metadata.UncompressedSize && (metadata.Flags & 8) == 0)
 
                         Console.WriteLine("Found compressed and uncompressed size mismatch for file %s", file_name);
                 }
@@ -376,7 +384,7 @@ namespace LibOpenCrush
                     // Seek to the start if the index entry
                     podstream.Position = this.index_offset + (index * DIR_ENTRY_SIZE);
                     metadata.PathOffset = ReadUInt();
-                    metadata.Size = ReadUInt();
+                    metadata.FileSize = ReadUInt();
                     metadata.Offset = ReadUInt();
                     if (this.magic == "POD4" || this.magic == "POD5")
                     {
@@ -384,7 +392,7 @@ namespace LibOpenCrush
                         metadata.CompressionLevel = ReadUInt();
                     }
                     else
-                        metadata.UncompressedSize = metadata.Size;
+                        metadata.UncompressedSize = metadata.FileSize;
                     metadata.TimeStamp = ReadUInt();
                     metadata.Checksum = ReadUInt();
 
@@ -393,13 +401,13 @@ namespace LibOpenCrush
                     podstream.Position = this.index_offset + ((uint)this.file_count * DIR_ENTRY_SIZE) + metadata.PathOffset;
                     file_name = ReadString(FILE_NAME_LENGTH);
 
-                    if (metadata.Size != metadata.UncompressedSize && metadata.CompressionLevel == 0)
+                    if (metadata.FileSize != metadata.UncompressedSize && metadata.CompressionLevel == 0)
                         Console.WriteLine("Found compressed and uncompressed size mismatch for file %s", file_name);
                 }
                 if (Path.DirectorySeparatorChar != '\\')
                     file_name = file_name.Replace('\\', Path.DirectorySeparatorChar);
 
-                this.file_tree.Add(file_name, metadata);
+                this.FileTree.Add(file_name, metadata);
             }
             podstream.Dispose();
         }
