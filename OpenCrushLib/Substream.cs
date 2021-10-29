@@ -5,9 +5,10 @@ using System.Text;
 
 namespace LibOpenCrush
 {
-    class SubStream : Stream
+    public class SubStream : Stream
     {
         private Stream baseStream;
+        private readonly long offset;
         private readonly long length;
         private long position;
         public SubStream(Stream baseStream, long offset, long length)
@@ -17,6 +18,7 @@ namespace LibOpenCrush
             if (offset < 0) throw new ArgumentOutOfRangeException("offset");
 
             this.baseStream = baseStream;
+            this.offset = offset;
             this.length = length;
 
             if (baseStream.CanSeek)
@@ -44,6 +46,27 @@ namespace LibOpenCrush
             position += read;
             return read;
         }
+        public short ReadShort(uint? offset = null)
+        {
+            if (offset != null)
+                Position = (uint)offset;
+            var reader = new BinaryReader(this);
+            return reader.ReadInt16();
+        }
+        public byte[] ReadBytes(int length,uint? offset = null)
+        {
+            if (offset != null)
+                Position = (uint)offset;
+            var reader = new BinaryReader(this);
+            return reader.ReadBytes(length);
+        }
+        public uint ReadUInt(uint? offset = null)
+        {
+            if (offset != null)
+                Position = (uint)offset;
+            var reader = new BinaryReader(this);
+            return reader.ReadUInt32();
+        }
         private void CheckDisposed()
         {
             if (baseStream == null) throw new ObjectDisposedException(GetType().Name);
@@ -62,7 +85,7 @@ namespace LibOpenCrush
         }
         public override bool CanSeek
         {
-            get { CheckDisposed(); return false; }
+            get { CheckDisposed(); return baseStream.CanSeek; }
         }
         public override long Position
         {
@@ -71,11 +94,28 @@ namespace LibOpenCrush
                 CheckDisposed();
                 return position;
             }
-            set { throw new NotSupportedException(); }
+            set 
+            {
+                position = value;
+                baseStream.Position = this.offset + position; }
         }
+        
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotSupportedException();
+            switch (origin)
+            {
+                case SeekOrigin.Begin:
+                    Position = offset;
+                    break;
+                case SeekOrigin.Current:
+                    Position += offset;
+                    break;
+                case SeekOrigin.End:
+                    Position = this.length - offset;
+                    break;
+            }
+
+           return Position;
         }
         public override void SetLength(long value)
         {
@@ -100,7 +140,7 @@ namespace LibOpenCrush
         }
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }
